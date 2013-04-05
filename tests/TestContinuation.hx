@@ -63,7 +63,7 @@ class TestContinuation
     return a + b;
   }
 
-  static function xx(xxx):Int return 1
+  static function xx(xxx):Int return 1;
 
   static function read(n:Int, handler:Int -> Void):Void
   {
@@ -76,7 +76,7 @@ class TestContinuation
   }
   @cps static function void1(n:Int):Void
   {
-    TestForkJoin.testForkJoin().async();
+    TestForkJoin.main().async(); // ? not defined ?
     return;
   }
 
