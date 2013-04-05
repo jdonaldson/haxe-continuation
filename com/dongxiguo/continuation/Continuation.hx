@@ -1,11 +1,11 @@
 // Copyright (c) 2012, 杨博 (Yang Bo)
 // All rights reserved.
-// 
+//
 // Author: 杨博 (Yang Bo) <pop.atry@gmail.com>
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // * Redistributions of source code must retain the above copyright notice,
 //   this list of conditions and the following disclaimer.
 // * Redistributions in binary form must reproduce the above copyright notice,
@@ -14,7 +14,7 @@
 // * Neither the name of the <ORGANIZATION> nor the names of its contributors
 //   may be used to endorse or promote products derived from this software
 //   without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -40,14 +40,15 @@ using Lambda;
  * @author 杨博 <pop.atry@gmail.com>
  */
 @:final
-class Continuation 
+class Continuation
 {
   /**
    * Wrap a function to CPS function.
    *
    * In wrapped function, you can use <code>.async()</code> postfix to invoke other asynchronous functions.
    */
-  @:macro public static function cpsFunction(expr:Expr):Expr
+  #if haxe3 macro #else @:macro #end
+  public static function cpsFunction(expr:Expr):Expr
   {
     switch (expr.expr)
     {
@@ -115,7 +116,8 @@ class Continuation
    *
    * In these methods, you can use <code>.async()</code> postfix to invoke other asynchronous functions.
    */
-  @:noUsing @:macro public static function cpsByMeta(metaName:String):Array<Field>
+  @:noUsing #if haxe3 macro #else @:macro #end
+  public static function cpsByMeta(metaName:String):Array<Field>
   {
     var bf = Context.getBuildFields();
     for (field in bf)
@@ -193,7 +195,7 @@ class ContinuationDetail
 {
   #if macro
   static var seed:Int = 0;
-  
+
   static function unpack(exprs: Array<Expr>, pos: Position):Expr
   {
     if (exprs.length != 1)
@@ -234,12 +236,12 @@ class ContinuationDetail
         return transformNoDelay(origin, rest);
       });
   }
-    
+
   static function transformNoDelay(origin:Expr, rest:Array<Expr>->Expr):Expr
   {
     switch (origin.expr)
     {
-      #if haxe_211
+      #if (haxe_ver > 2.10)
       case EMeta(_, _):
       {
         return rest([origin]);
@@ -419,7 +421,7 @@ class ContinuationDetail
       case ETry(e, catches):
       {
         var endTryName = "__endTry_" + seed++;
-        var endTryIdent = 
+        var endTryIdent =
         {
           pos: origin.pos,
           expr: EConst(CIdent(endTryName))
@@ -453,7 +455,7 @@ class ContinuationDetail
               ret: null,
               params: [],
               expr: rest(isVoidTry ? [] : [ tryResultIdent ]),
-              args: isVoidTry ? [] : 
+              args: isVoidTry ? [] :
               [
                 {
                   name: tryResultName,
@@ -465,7 +467,7 @@ class ContinuationDetail
             })
         }
         var tryBody = isVoidTry ? (macro { $e; __noException = true; }) : (macro { $tryResultIdent = $e; __noException = true; });
-        var transformedTry = 
+        var transformedTry =
         {
           pos: origin.pos,
           expr: ETry(tryBody, catches.map(
@@ -563,11 +565,11 @@ class ContinuationDetail
           {
             if (c.expr == null)
             {
-              return { expr: rest([]), #if haxe_211 guard: c.guard, #end values: c.values };
+              return { expr: rest([]), #if (haxe_ver > 2.10) guard: c.guard, #end values: c.values };
             }
             else
             {
-              return { expr: transform(c.expr, rest), #if haxe_211 guard: c.guard, #end values: c.values };
+              return { expr: transform(c.expr, rest), #if (haxe_ver > 2.10) guard: c.guard, #end values: c.values };
             }
           }).array();
           var transformedDef = edef == null ? rest([]) : transform(edef, rest);
@@ -1123,9 +1125,9 @@ class ContinuationDetail
       }
     }
   }
-  
+
   static var nextDelayedId = 0;
-  
+
   @:isVar
   static var delayFunctions(get_delayFunctions, set_delayFunctions):Array<Void->Expr>;
 
@@ -1150,7 +1152,7 @@ class ContinuationDetail
       return delayFunctions;
     }
   }
-  
+
   static function delay(pos:Position, delayedFunction:Void->Expr):Expr
   {
     var id = delayFunctions.length;
@@ -1162,10 +1164,11 @@ class ContinuationDetail
       expr: ECall(macro com.dongxiguo.continuation.Continuation.ContinuationDetail.runDelayedFunction, [idExpr]),
     }
   }
-  
+
   #end
-  
-  @:noUsing @:macro public static function runDelayedFunction(id:Int):Expr
+
+  @:noUsing #if haxe3 macro #else @:macro #end
+  public static function runDelayedFunction(id:Int):Expr
   {
     return delayFunctions[id]();
   }
