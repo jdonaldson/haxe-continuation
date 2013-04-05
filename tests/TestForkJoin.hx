@@ -79,11 +79,9 @@ class TestForkJoin
 
   @:cps public static function easy():Array<Int>
   {
-      var result = {
-          var val, collect = [1,2,3].startCollectors().async();
-          collect(val+1).async();
-      }
-      return result;
+      var val, collect = [1,2,3].startCollectors().async();
+      return collect(val+1).async(); // error: not enough arguments
+
   }
 
   public static function main()
