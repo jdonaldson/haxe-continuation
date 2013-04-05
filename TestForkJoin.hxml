@@ -1,0 +1,5 @@
+-cp tests
+-js bin/TestForkJoin.js
+-main tests.TestForkJoin
+-cmd nodejs bin/TestForkJoin.js
+
