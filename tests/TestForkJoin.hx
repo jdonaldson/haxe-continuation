@@ -1,11 +1,11 @@
 // Copyright (c) 2013, 杨博 (Yang Bo)
 // All rights reserved.
-// 
+//
 // Author: 杨博 (Yang Bo) <pop.atry@gmail.com>
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // * Redistributions of source code must retain the above copyright notice,
 //   this list of conditions and the following disclaimer.
 // * Redistributions in binary form must reproduce the above copyright notice,
@@ -14,7 +14,7 @@
 // * Neither the name of the <ORGANIZATION> nor the names of its contributors
 //   may be used to endorse or promote products derived from this software
 //   without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -50,18 +50,18 @@ class TestForkJoin
     {
       var threadId, collect = childrenIds.startCollectors().async();
       trace("Start sub-thread #" + parentId + "." + threadId);
-      
+
       trace("Sub-thread #" + parentId + "." + threadId + " is going to sleep.");
       sleep(Std.int(Math.random() * 5000.0)).async();
-      trace("Sub-thread #" + parentId + "." + threadId + " is waken up.");
-      
+      trace("Sub-thread #" + parentId + "." + threadId + " is woken up.");
+
       trace("Collecting data from sub-thread #" + parentId + "." + threadId + "...");
       collect(threadId * parentId).async();
     }
-    trace("All sub-threads of #" + parentId + " are joint.");
+    trace("All sub-threads of #" + parentId + " are joined.");
     return result;
   }
-  
+
   @:cps public static function startManagers():Void
   {
     var threadIds = [ 0, 1, 2, 3 ];
@@ -69,19 +69,31 @@ class TestForkJoin
     {
       var threadId, join = threadIds.fork().async();
       trace("Start thread #" + threadId);
-      
+
       trace("Data from sub-threads of #" + threadId + ": " + startWorkers(threadId, [0, 1, 2, 3, 4, 5]).async());
-      
       trace("Joining thread #" + threadId + "...");
       join().async();
     }
-    trace("All threads are joint.");
+    trace("All threads are joined.");
+  }
+
+  @:cps public static function easy():Array<Int>
+  {
+      var result = {
+          var val, collect = [1,2,3].startCollectors().async();
+          collect(val+1).async();
+      }
+      return result;
   }
 
   public static function main()
   {
-    startManagers(function() { trace("Test is done."); } );
-    trace("All threads are started.");
+    // startManagers(function() { trace("Test is done."); } );
+      easy(function(vals:Array<Int>){
+          trace('all done');
+          trace(vals);
+      });
+      trace("All threads are started.");
   }
-  
+
 }
